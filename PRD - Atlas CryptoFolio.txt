@@ -1,0 +1,491 @@
+# PRD - Atlas CryptoFolio
+
+## 1. VISÃO DO PRODUTO
+
+Atlas CryptoFolio é uma plataforma SaaS completa para gestão de portfólios de criptomoedas e ativos tokenizados que permite aos investidores criar múltiplas carteiras, registrar transações de compra e venda, acompanhar a evolução dos seus investimentos através de gráficos e dashboards interativos, além de receber insights personalizados e notícias atualizadas sobre os mercados cripto. A plataforma oferece cálculos automáticos de performance, médias de preço, lucro/prejuízo realizado e não realizado, e distribuição de ativos em tempo real.
+
+## 2. OBJETIVOS DE NEGÓCIO
+
+- **Simplificar a gestão de portfólios cripto**: Oferecer uma plataforma intuitiva que elimine a necessidade de planilhas complexas para tracking de investimentos
+- **Aumentar a retenção de usuários**: Criar valor através de insights personalizados, notícias relevantes e visualizações que incentivem uso diário
+- **Monetização através de tiers**: Estabelecer modelo freemium com limitações em carteiras gratuitas (3 wallets) e funcionalidades premium para assinantes (wallets ilimitadas, insights avançados, dados real-time)
+- **Atingir 10.000 usuários ativos** no primeiro ano com taxa de conversão de 5% para plano pago
+- **Posicionar-se como referência** em gestão de portfólios cripto no mercado brasileiro e lusófono
+
+## 3. PERSONAS
+
+### Pedro - O Investidor Ativo
+- **Idade**: 28-35 anos
+- **Perfil**: Profissional de tecnologia com renda média-alta
+- **Experiência**: Investe em cripto há 2-3 anos, possui 5-10 ativos diferentes
+- **Pain Points**: 
+  - Dificuldade em calcular preço médio após múltiplas compras
+  - Perde tempo atualizando planilhas manualmente
+  - Não consegue visualizar facilmente a performance geral do portfólio
+- **Necessidade Principal**: Tracking automatizado e preciso de todos os investimentos com cálculos de P&L em tempo real
+
+### Marina - A Iniciante Organizada
+- **Idade**: 24-30 anos
+- **Perfil**: Profissional liberal ou empresária começando em cripto
+- **Experiência**: Investe há menos de 1 ano, possui 2-5 ativos
+- **Pain Points**:
+  - Insegurança sobre estar tomando decisões corretas
+  - Necessita de insights educacionais sobre o mercado
+  - Quer entender melhor a composição ideal de portfólio
+- **Necessidade Principal**: Ferramenta educativa que ajude a tomar decisões informadas e acompanhar investimentos de forma simples
+
+### Carlos - O Trader Multi-carteira
+- **Idade**: 32-45 anos
+- **Perfil**: Investidor experiente com múltiplas estratégias
+- **Experiência**: Investe em cripto há 3+ anos, gerencia portfolios separados (long-term, trading, DeFi)
+- **Pain Points**:
+  - Precisa separar investimentos por estratégia
+  - Dificuldade em consolidar visão geral de todos os portfólios
+  - Quer comparar performance entre diferentes abordagens
+- **Necessidade Principal**: Capacidade de criar e gerenciar múltiplas carteiras independentes com visão consolidada
+
+## 4. FUNCIONALIDADES CORE
+
+### 4.1 Autenticação e Gestão de Organizações (Clerk)
+
+**Descrição:**
+Sistema completo de autenticação com suporte a organizações (multi-tenancy), permitindo que usuários criem contas individuais ou gerenciem portfolios em contexto organizacional (família, empresa, clube de investimentos).
+
+**Requisitos:**
+- Login com OAuth (Google, GitHub, Email)
+- Registro com verificação de email
+- Suporte a Organizations para gestão multi-tenant
+- Profile management (avatar, nome, preferências)
+- Two-factor authentication (2FA) opcional
+- Session management com tokens JWT
+- Webhooks para sincronização com Supabase
+
+**Fluxo do usuário:**
+1. Usuário acessa a plataforma e clica em "Sign Up"
+2. Escolhe método de autenticação (OAuth ou email/senha)
+3. Após autenticação, é direcionado para onboarding
+4. Pode criar ou juntar-se a uma organização (opcional)
+5. Acessa dashboard principal com contexto de usuário/organização
+
+### 4.2 Gestão de Carteiras (Wallets)
+
+**Descrição:**
+Funcionalidade central que permite criar, editar e organizar múltiplas carteiras de investimento, cada uma com nome personalizado, descrição e objetivo específico.
+
+**Requisitos:**
+- Criar até 3 carteiras no plano gratuito, ilimitado no premium
+- Cada carteira tem: nome, descrição, objetivo, cor/ícone personalizável
+- Visualizar lista de todas as carteiras com resumo (valor total, variação 24h, número de ativos)
+- Arquivar/desarquivar carteiras (soft delete)
+- Duplicar carteiras para criar templates
+- Definir carteira padrão
+- Filtrar e ordenar carteiras por: data de criação, valor, performance
+
+**Fluxo do usuário:**
+1. Usuário clica em "Nova Carteira" no dashboard
+2. Preenche formulário: nome (obrigatório), descrição, objetivo (ex: "Long-term Hold", "Trading Ativo")
+3. Escolhe cor ou ícone para identificação visual
+4. Clica em "Criar Carteira"
+5. É redirecionado para a página da carteira onde pode adicionar ativos
+
+### 4.3 Registro de Transações
+
+**Descrição:**
+Sistema completo para registrar todas as operações de compra e venda de criptomoedas, com cálculos automáticos de preço médio, lucro realizado e tracking de histórico.
+
+**Requisitos:**
+- **Tipos de transação**: Compra, Venda, Transferência (entre carteiras), Airdrop/Reward
+- **Campos obrigatórios**: Data/hora, tipo, ativo, quantidade, preço unitário
+- **Campos opcionais**: Taxa da transação, exchange utilizada, notas
+- **Cálculo automático** de: valor total, preço médio ponderado, P&L realizado
+- **Validações**: 
+  - Não permitir vender quantidade maior que o disponível
+  - Alertar sobre transações com preços muito discrepantes da média
+- **Importação em massa** via CSV (formato padrão da plataforma)
+- **Edição e exclusão** de transações históricas (com recalculo automático)
+- **Anexar comprovantes** (opcional): screenshot, PDF da exchange via Supabase Storage
+
+**Fluxo do usuário - Compra:**
+1. Na página da carteira, clica em "Nova Transação"
+2. Seleciona "Compra" como tipo
+3. Busca e seleciona o ativo (ex: Bitcoin - BTC)
+4. Insere quantidade comprada (ex: 0.05 BTC)
+5. Insere preço unitário em USD ou BRL (ex: $45,000)
+6. Adiciona taxa de transação (opcional)
+7. Seleciona data/hora da operação
+8. Adiciona notas (opcional)
+9. Clica em "Salvar Transação"
+10. Sistema calcula automaticamente novo preço médio e atualiza portfolio
+
+**Fluxo do usuário - Venda:**
+1. Segue mesmo processo da compra, mas seleciona "Venda"
+2. Sistema valida se há saldo suficiente do ativo
+3. Após confirmar, calcula automaticamente:
+   - Lucro/Prejuízo realizado (diferença entre preço de venda e preço médio de compra)
+   - Atualiza quantidade disponível
+   - Atualiza preço médio dos ativos remanescentes (método FIFO)
+
+### 4.4 Dashboard e Visualizações
+
+**Descrição:**
+Interface principal com visão consolidada de todos os portfólios, gráficos interativos de performance, distribuição de ativos e métricas-chave de investimento.
+
+**Requisitos:**
+
+**Componentes do Dashboard:**
+- **Resumo Geral (Hero Section)**:
+  - Valor total de todos os portfólios (em USD e moeda local)
+  - Variação 24h (% e valor absoluto)
+  - Lucro/Prejuízo total realizado
+  - Lucro/Prejuízo não realizado
+  - Melhor e pior ativo do dia
+
+- **Gráficos de Performance**:
+  - **Linha temporal**: Evolução do valor total (7d, 30d, 90d, 1y, All time)
+  - **Pizza (Donut)**: Distribuição atual por ativo (% do portfolio)
+  - **Barra horizontal**: Top 10 ativos por valor
+  - **Área empilhada**: Evolução da composição do portfólio ao longo do tempo
+  - Todos os gráficos com filtros por: período, carteira específica, ativo
+
+- **Tabela de Ativos**:
+  - Colunas: Ativo, Quantidade, Preço Médio, Preço Atual, Valor Total, P&L (% e valor), Variação 24h
+  - Ordenação por qualquer coluna
+  - Filtros por: carteira, tipo de ativo, ganho/perda
+  - Busca por nome/símbolo do ativo
+
+- **Métricas de Performance**:
+  - ROI total (%)
+  - Total investido vs Valor atual
+  - Maior ganho/perda individual
+  - Número total de transações
+  - Última atualização de preços
+
+**Fluxo do usuário:**
+1. Após login, usuário acessa dashboard principal
+2. Visualiza resumo consolidado de todos os portfólios no topo
+3. Navega entre diferentes gráficos usando tabs ou scroll
+4. Aplica filtros de período para analisar performance temporal
+5. Clica em ativo específico para ver detalhes e histórico de transações
+6. Pode navegar para carteira individual clicando em card/link
+
+### 4.5 Insights e Análises
+
+**Descrição:**
+Página dedicada a fornecer análises automatizadas e insights personalizados sobre o portfólio do usuário, incluindo sugestões de rebalanceamento, alertas de concentração e comparações com benchmarks.
+
+**Requisitos:**
+
+**Tipos de Insights:**
+
+- **Análise de Concentração**:
+  - Alerta quando um ativo representa >30% do portfólio
+  - Sugestão de diversificação com ativos complementares
+  - Score de diversificação (0-100)
+
+- **Análise de Performance**:
+  - Comparação com Bitcoin (índice de referência)
+  - Identificação de ativos com melhor/pior performance relativa
+  - Cálculo de Sharpe Ratio simplificado (retorno ajustado ao risco)
+
+- **Sugestões de Rebalanceamento**:
+  - Baseado em alocação ideal definida pelo usuário (opcional)
+  - Quando ativos desviam >15% da alocação alvo
+  - Cálculo de quantidades a comprar/vender para rebalancear
+
+- **Alertas Personalizados**:
+  - Notificação quando ativo atinge target de preço
+  - Alerta de queda >10% em 24h em qualquer ativo
+  - Lembrete de review mensal do portfólio
+
+- **Análise Temporal**:
+  - Melhor/pior dia para investimentos históricos
+  - Padrões de compra/venda (tendências comportamentais)
+  - Timing de mercado: análise de DCA vs timing específico
+
+**Fluxo do usuário:**
+1. Acessa página "Insights" no menu principal
+2. Visualiza cards com principais insights ordenados por relevância
+3. Pode expandir cada insight para ver detalhes e recomendações
+4. Aplica filtros para insights específicos (concentração, performance, etc)
+5. Marca insights como "lidos" ou "aplicados"
+6. Configura preferências de alertas e notificações
+
+### 4.6 Feed de Notícias e Market Data
+
+**Descrição:**
+Agregador de notícias relevantes sobre criptomoedas com foco nos ativos presentes no portfólio do usuário, além de dados de mercado em tempo real.
+
+**Requisitos:**
+
+**Feed de Notícias:**
+- Integração com APIs de notícias cripto (CryptoNews API, NewsAPI com filtros cripto)
+- Filtro automático para notícias relevantes aos ativos do usuário
+- Categorização: Breaking News, Análise, Regulação, Tecnologia, Mercado
+- Tags por ativo mencionado
+- Bookmark de notícias para leitura posterior
+- Resumo com IA de artigos longos (premium feature)
+- Notificações push para breaking news de ativos owned
+
+**Market Data:**
+- Preços em tempo real (atualização a cada 5min para plano gratuito, 1min para premium)
+- Tabela de market overview: Top gainers/losers 24h
+- Fear & Greed Index
+- Bitcoin Dominance
+- Total Market Cap
+- Volume 24h global
+- Calendário de eventos importantes (halvings, updates, listings)
+
+**Fluxo do usuário:**
+1. Acessa página "Notícias" ou visualiza widget no dashboard
+2. Feed é personalizado automaticamente baseado em seus ativos
+3. Pode alternar entre "Para Você" (personalizado) e "Trending" (geral)
+4. Clica em notícia para ler resumo ou acessar artigo completo
+5. Pode filtrar por categoria ou ativo específico
+6. Salva notícias relevantes para ler depois
+7. Visualiza dados de mercado em cards/widgets dedicados
+
+### 4.7 Cálculos Automáticos de Métricas
+
+**Descrição:**
+Engine de cálculo que processa automaticamente todas as métricas financeiras necessárias para análise de investimentos em cripto.
+
+**Requisitos:**
+
+**Cálculos Implementados:**
+
+- **Preço Médio Ponderado (Weighted Average Price)**:
+  ```
+  Preço Médio = Σ(quantidade_i × preço_i) / Σ(quantidade_i)
+  ```
+  - Atualizado automaticamente a cada nova compra
+  - Recalculado após vendas parciais usando método FIFO
+
+- **P&L Não Realizado (Unrealized P&L)**:
+  ```
+  P&L Não Realizado = (Preço Atual - Preço Médio) × Quantidade Atual
+  P&L % = ((Preço Atual - Preço Médio) / Preço Médio) × 100
+  ```
+
+- **P&L Realizado (Realized P&L)**:
+  ```
+  P&L Realizado = (Preço de Venda - Preço Médio na Compra) × Quantidade Vendida
+  ```
+  - Acumulado por ativo
+  - Acumulado total do portfólio
+
+- **Retorno sobre Investimento (ROI)**:
+  ```
+  ROI = ((Valor Atual + Total Vendido) - Total Investido) / Total Investido × 100
+  ```
+
+- **Alocação de Ativos**:
+  ```
+  % Alocação = (Valor do Ativo / Valor Total do Portfólio) × 100
+  ```
+
+- **Performance Relativa**:
+  - Performance do portfolio vs Bitcoin (beta)
+  - Performance do portfolio vs market cap total
+
+**Requisitos Técnicos:**
+- Todos os cálculos executados server-side (Server Actions) para garantir precisão
+- Cache de resultados com revalidação em mudanças de preço
+- Precisão decimal usando biblioteca Decimal.js para evitar erros de arredondamento
+- Logs de auditoria para rastreabilidade de cálculos
+
+### 4.8 Integração com APIs de Preços
+
+**Descrição:**
+Sistema de integração com APIs externas para obtenção de preços atualizados de criptomoedas e ativos tokenizados.
+
+**Requisitos:**
+
+**Providers de Dados:**
+- **Primário**: CoinGecko API (free tier para MVP)
+- **Secundário**: CoinMarketCap API (fallback)
+- **Futuro**: Binance API para dados real-time (premium)
+
+**Funcionalidades:**
+- Busca de ativos por nome ou símbolo
+- Preço atual em USD e moedas fiat principais (BRL, EUR)
+- Dados históricos (24h, 7d, 30d, 1y)
+- Market cap, volume 24h, supply circulante
+- Metadados: logo, descrição, links oficiais, categorias
+- Rate limiting e caching para otimizar custos da API
+- Retry logic com exponential backoff em falhas
+- Cron job via Vercel Cron para atualização periódica de preços
+
+**Fluxo técnico:**
+1. Vercel Cron executa a cada 5min (free) ou 1min (premium)
+2. Server Action busca lista de todos os ativos únicos no sistema
+3. Faz batch request para API de preços (máx 250 ativos por request)
+4. Armazena preços em tabela `price_snapshots` com timestamp
+5. Atualiza cache via revalidatePath
+6. Notifica frontend via Supabase Realtime se usuário online
+7. Em caso de falha, usa último preço conhecido + flag de "stale data"
+
+## 5. REQUISITOS NÃO-FUNCIONAIS
+
+**Performance:**
+- First Contentful Paint < 1.5s
+- Time to Interactive < 3s
+- Lighthouse Performance Score > 90
+- Dashboard deve carregar em < 2s mesmo com 1000+ transações
+- Queries de database < 100ms (P95)
+- API de preços com cache de 5min (free) / 1min (premium)
+
+**Segurança:**
+- Todas as tabelas protegidas por RLS (Row Level Security)
+- Autenticação obrigatória para todas as rotas /app/*
+- Validação server-side de todos os inputs com Zod
+- Proteção contra SQL injection via Drizzle ORM parameterizado
+- Rate limiting de 100 req/min por usuário (Vercel)
+- Dados sensíveis criptografados at-rest no Supabase
+- HTTPS obrigatório em todas as comunicações
+- Session timeout de 7 dias com renovação automática
+
+**Escalabilidade:**
+- Arquitetura multi-tenant suporta 50k+ organizations
+- Database otimizado para 1M+ transações
+- Supabase RLS garante isolamento sem overhead significativo
+- Serverless functions (Vercel Edge) escalam automaticamente
+- CDN global para assets estáticos (Vercel Edge Network)
+- Lazy loading de componentes pesados (gráficos, tabelas)
+
+**Responsividade:**
+- Design mobile-first
+- Breakpoints: mobile (< 768px), tablet (768-1024px), desktop (> 1024px)
+- Touch-friendly para mobile (botões mínimo 44x44px)
+- Navegação adaptativa por device
+- Progressive Web App (PWA) com suporte offline básico para visualização
+
+**Acessibilidade:**
+- WCAG 2.1 Level AA compliance
+- Navegação completa por teclado
+- Screen reader friendly (aria-labels, semantic HTML)
+- Contraste de cores adequado (mínimo 4.5:1)
+- Textos alternativos em todas as imagens e ícones
+
+**Disponibilidade:**
+- Uptime target: 99.9% (SLA do Vercel + Supabase)
+- Backup automático diário do database (Supabase nativo)
+- Disaster recovery plan com RPO < 24h, RTO < 2h
+- Status page pública para transparência de incidents
+
+**Compliance:**
+- LGPD/GDPR compliance (dados armazenados, direito ao esquecimento)
+- Termos de uso e política de privacidade
+- Cookie consent banner
+- Export de dados do usuário em formato JSON/CSV
+
+## 6. FORA DO ESCOPO V1
+
+❌ **Trading direto na plataforma** - Usuários devem executar trades nas exchanges e registrar manualmente
+❌ **Integração automática com exchanges via API** - Apenas importação manual via CSV
+❌ **Suporte a NFTs** - Foco exclusivo em fungible tokens (ERC-20, BEP-20, etc)
+❌ **Funcionalidades DeFi** - Sem tracking de staking, lending, liquidity pools na V1
+❌ **Tax reporting** - Sem geração de relatórios fiscais automatizados
+❌ **Mobile app nativo** - Apenas PWA responsivo
+❌ **Social features** - Sem compartilhamento público de portfólios ou seguir outros usuários
+❌ **Advanced charting** - Apenas gráficos básicos, sem análise técnica avançada (candlesticks, indicadores)
+❌ **Alertas por SMS** - Apenas email e push notifications
+❌ **Multi-currency base** - Cálculos sempre em USD como base, conversão apenas visual para BRL/EUR
+❌ **White-label solution** - Produto SaaS único sem customização para terceiros
+❌ **Margin/Futures/Derivatives tracking** - Apenas spot holdings
+
+## 7. ONBOARDING
+
+**Objetivo do Onboarding:**
+Levar o usuário de "conta criada" até "primeira transação registrada e dashboard visualizado" em menos de 3 minutos, demonstrando valor imediato.
+
+**Fluxo:**
+
+1. **Welcome Screen (após sign-up via Clerk)**
+   - Mensagem de boas-vindas personalizada com nome do usuário
+   - Breve explicação: "Gerencie seus investimentos cripto em um só lugar"
+   - CTA principal: "Começar Setup" ou link "Pular para Dashboard"
+
+2. **Criação da Primeira Carteira**
+   - Modal simplificado: "Dê um nome à sua primeira carteira"
+   - Sugestões de templates: "Portfólio Principal", "Long-term Hold", "Trading Ativo"
+   - Campo de nome pré-preenchido com "Minha Carteira" para agilizar
+   - Descrição opcional (pode pular)
+   - Botão: "Criar Carteira"
+
+3. **Adicionar Primeiro Ativo (opcional mas incentivado)**
+   - "Vamos adicionar seu primeiro investimento?"
+   - Opções rápidas com logos: Bitcoin, Ethereum, ou "Buscar outro ativo"
+   - Form simplificado em steps:
+     - Quantidade (ex: 0.05 BTC)
+     - Preço pago (ex: $45,000)
+     - Data (padrão: hoje, pode alterar)
+   - Botão: "Adicionar Investimento" ou link "Fazer isso depois"
+
+4. **Tour Guiado do Dashboard (tooltips interativos)**
+   - 5 tooltips destacando áreas principais:
+     - "Aqui está seu valor total" (Hero card)
+     - "Acompanhe a evolução aqui" (Gráfico de linha)
+     - "Veja a distribuição dos ativos" (Gráfico pizza)
+     - "Adicione mais transações aqui" (Botão CTA)
+     - "Receba insights personalizados" (Link para Insights)
+   - Botão "Próximo" em cada tooltip
+   - Opção de "Pular tour" visível em todos os steps
+
+5. **Checklist de Primeiros Passos (sidebar persistente por 7 dias)**
+   - Gamificação com barra de progresso
+   - Esconde automaticamente após todos os itens completos
+
+**Checklist de Primeiros Passos:**
+- [x] Criar conta (auto-completo)
+- [ ] Criar primeira carteira
+- [ ] Adicionar primeira transação
+- [ ] Explorar gráficos de performance
+- [ ] Configurar alertas de preço
+- [ ] Ler primeiro insight personalizado
+- [ ] Convidar um amigo (opcional, oferece 1 mês premium)
+
+**Email de boas-vindas (via Resend):**
+- Enviado imediatamente após sign-up
+- Conteúdo:
+  - Mensagem de boas-vindas
+  - Link direto para dashboard
+  - Dicas rápidas: "Como adicionar sua primeira transação"
+  - Link para documentação/tutoriais
+  - Suporte: email de contato
+
+## 8. MÉTRICAS DE SUCESSO
+
+**Métricas de Aquisição:**
+- **Usuários ativos mensais (MAU)**: 10.000 no primeiro ano
+- **Taxa de conversão Sign-up → Onboarding completo**: > 70%
+- **Taxa de ativação (primeira transação em 7 dias)**: > 50%
+
+**Métricas de Engajamento:**
+- **DAU/MAU ratio**: > 0.25 (usuário retorna pelo menos 1x por semana)
+- **Sessões por usuário/semana**: Média de 3-4 sessões
+- **Tempo médio de sessão**: 5-8 minutos
+- **Transações registradas por usuário/mês**: Média de 5+
+
+**Métricas de Retenção:**
+- **Retenção D7 (Day 7)**: > 40%
+- **Retenção D30 (Day 30)**: > 25%
+- **Churn rate mensal**: < 10%
+
+**Métricas de Monetização:**
+- **Taxa de conversão Free → Premium**: 5% nos primeiros 90 dias
+- **MRR (Monthly Recurring Revenue)**: R$ 50.000 ao final do ano 1
+- **LTV (Lifetime Value)**: R$ 600 por usuário premium
+- **CAC (Customer Acquisition Cost)**: < R$ 100
+
+**Métricas de Performance Técnica:**
+- **Uptime**: > 99.9%
+- **Lighthouse Score**: > 90
+- **Time to Interactive**: < 3s
+- **API error rate**: < 0.5%
+- **P95 query time**: < 100ms
+
+**Métricas de Satisfação:**
+- **NPS (Net Promoter Score)**: > 40
+- **CSAT (Customer Satisfaction)**: > 4.5/5
+- **Feature adoption rate** (uso de insights): > 60%
+- **Support ticket volume**: < 2% dos usuários ativos/mês
