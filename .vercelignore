@@ -1,0 +1,8 @@
+_backup
+*.log
+build_output.txt
+dev_rls_final.log
+.env.local
+.env
+node_modules
+.next
